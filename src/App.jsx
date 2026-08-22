@@ -489,12 +489,7 @@ function Stage() {
             <a href={profile.github} target="_blank" rel="noreferrer" aria-label="GitHub">
               <GithubIcon />
             </a>
-            <a
-              href="https://www.linkedin.com/"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="LinkedIn"
-            >
+            <a href={profile.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn">
               <LinkedinIcon />
             </a>
             <a href={`mailto:${profile.email}`} aria-label="Email">
@@ -579,6 +574,9 @@ function About() {
               <div className="about-links">
                 <a href={profile.github} target="_blank" rel="noreferrer" aria-label="GitHub">
                   <GithubIcon />
+                </a>
+                <a href={profile.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn">
+                  <LinkedinIcon />
                 </a>
                 <a href={`mailto:${profile.email}`} aria-label="Email">
                   <MailIcon />

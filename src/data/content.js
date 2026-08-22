@@ -15,6 +15,7 @@ const shared = {
   email: 'jdriverac08@gmail.com',
   github: 'https://github.com/wanttoplay123',
   githubLabel: 'github.com/wanttoplay123',
+  linkedin: 'https://www.linkedin.com/in/jesus-david-rivera-c-rivera-coronado-4757b633b',
   reward: '$1,000,000',
 }
 

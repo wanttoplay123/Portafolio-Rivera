@@ -200,5 +200,4 @@ Pages de proyecto), cambiar a `base: '/nombre-repo/'`.
 
 ## Pendiente
 
-- Reemplazar la URL de LinkedIn (`https://www.linkedin.com/`) por el perfil real en `src/App.jsx`.
 - Enlaces a repos/demo por proyecto (hoy el modal solo describe el caso).
