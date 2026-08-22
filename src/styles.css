@@ -1,0 +1,1089 @@
+/* =========================================================================
+   Outlaw Portfolio — Jesús David Rivera Coronado
+   Paleta sepia / western, capas 3D en WebGL detrás del DOM.
+   ========================================================================= */
+
+:root {
+  --ink: #080705;
+  --soot: #14100b;
+  --soot-2: #1d1710;
+  --bone: #e9dec6;
+  --parchment: #d8c8a2;
+  --brass: #c9a15c;
+  --ember: #e0913f;
+  --rust: #8a5a2b;
+  --muted: #9a8c74;
+
+  --font-display: 'Bevan', 'Rye', Georgia, serif;
+  --font-western: 'Rye', Georgia, serif;
+  --font-body: 'Roboto Slab', Georgia, serif;
+  --font-sign: 'Mrs Saint Delafield', cursive;
+
+  --maxw: 1280px;
+  --pad: clamp(1.2rem, 4vw, 4rem);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* la nav es fija: los anclajes se detienen debajo de ella */
+  scroll-padding-top: 6rem;
+  /* los revólveres sangran fuera del viewport a propósito: se recortan aquí
+     para que no aparezca scroll horizontal */
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-size: clamp(0.94rem, 0.9rem + 0.2vw, 1.02rem);
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--rust);
+  color: var(--bone);
+}
+
+/* --------------------------------------------------------------- overlays */
+
+.scene3d {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  filter: brightness(0.72) contrast(1.06) saturate(0.9);
+}
+
+.scene3d canvas {
+  display: block;
+}
+
+/* Desactivado: era una capa `overlay` por encima de todo, vídeo incluido, y
+   ensuciaba la cara. Además animaba a 0.7s a pantalla completa y era uno de
+   los dos costes de rendimiento medidos. Para recuperarlo, quitar el `display`
+   y volver a montar <div className="grain"> en App.jsx. */
+.grain {
+  display: none;
+  position: fixed;
+  inset: -4%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.7s steps(3) infinite;
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-2%, 1%); }
+  66% { transform: translate(1%, -2%); }
+  100% { transform: translate(0, 0); }
+}
+
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* solo bordes: el centro queda limpio para que se vea el vídeo. Arriba y
+     abajo sí se oscurece, que es donde apoyan la nav y el pie. */
+  background:
+    radial-gradient(ellipse 94% 90% at 50% 45%, rgba(4, 3, 2, 0) 0%, rgba(4, 3, 2, 0) 46%, rgba(4, 3, 2, 0.4) 78%, rgba(3, 2, 2, 0.8) 100%),
+    linear-gradient(180deg, rgba(4, 3, 2, 0.55) 0%, rgba(4, 3, 2, 0) 9%, rgba(4, 3, 2, 0) 84%, rgba(3, 2, 2, 0.72) 100%);
+}
+
+main,
+.footer {
+  position: relative;
+  z-index: 3;
+}
+
+/* por encima de main: si comparten z-index, el DOM posterior gana y el
+   contenido se dibuja sobre la barra */
+.nav {
+  z-index: 20;
+}
+
+/* -------------------------------------------------------------------- nav */
+
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem var(--pad);
+  transition: background 0.35s ease, backdrop-filter 0.35s ease, box-shadow 0.35s ease;
+}
+
+.nav.is-solid {
+  /* opaco de verdad: si no, el contenido que pasa por debajo se cruza con el
+     logo y los enlaces */
+  background: linear-gradient(180deg, rgba(8, 7, 5, 0.99) 60%, rgba(8, 7, 5, 0.92));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 rgba(201, 161, 92, 0.2), 0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.monogram {
+  font-family: var(--font-western);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--bone);
+  padding: 0.1em 0.25em;
+  border: 2px solid rgba(201, 161, 92, 0.45);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.brand-text strong {
+  font-family: var(--font-body);
+  letter-spacing: 0.34em;
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+
+.brand-text em {
+  font-style: normal;
+  letter-spacing: 0.24em;
+  font-size: 0.62rem;
+  color: var(--muted);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.nav-links a {
+  position: relative;
+  padding: 0.35rem 0.1rem;
+  color: var(--parchment);
+  opacity: 0.75;
+  transition: opacity 0.25s ease, color 0.25s ease;
+}
+
+.nav-links a:hover {
+  opacity: 1;
+  color: var(--bone);
+}
+
+.nav-links a.is-active {
+  opacity: 1;
+  color: var(--bone);
+}
+
+.nav-links a.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0.9rem;
+  bottom: 0.1rem;
+  height: 1px;
+  background: var(--brass);
+}
+
+.nav-links .sep {
+  margin-left: 0.55rem;
+  color: rgba(201, 161, 92, 0.5);
+  font-size: 0.55rem;
+  vertical-align: middle;
+}
+
+.burger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: 1px solid rgba(201, 161, 92, 0.35);
+  padding: 0.55rem 0.6rem;
+  cursor: pointer;
+}
+
+.burger span {
+  width: 22px;
+  height: 2px;
+  background: var(--parchment);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.burger.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.burger.is-open span:nth-child(2) { opacity: 0; }
+.burger.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ------------------------------------------------------------------ botones */
+
+.btn-frame {
+  display: inline-block;
+  position: relative;
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.78rem;
+  color: var(--bone);
+  padding: 0.95rem 2.2rem;
+  border: 1px solid rgba(201, 161, 92, 0.55);
+  outline: 3px solid transparent;
+  outline-offset: 5px;
+  background: linear-gradient(180deg, rgba(30, 24, 16, 0.75), rgba(10, 8, 6, 0.85));
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.85), 0 6px 24px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-frame::before,
+.btn-frame::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(201, 161, 92, 0.28);
+  pointer-events: none;
+  transition: inset 0.3s ease;
+}
+
+.btn-frame::after {
+  inset: 4px;
+  border: none;
+}
+
+.btn-frame:hover {
+  color: #fff;
+  border-color: var(--ember);
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 30px rgba(224, 145, 63, 0.18), 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+.btn-frame:hover::before {
+  inset: 7px;
+}
+
+.btn-sm {
+  padding: 0.6rem 1.4rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+}
+
+/* -------------------------------------------------------------------- hero */
+
+.hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: 7rem var(--pad) 5rem;
+}
+
+.kicker {
+  display: inline-block;
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--parchment);
+  padding: 0.45rem 1.1rem;
+  border: 1px solid rgba(201, 161, 92, 0.3);
+  background: rgba(8, 7, 5, 0.5);
+  margin-bottom: 1.4rem;
+}
+
+.hero-copy h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 3.8vw, 3.7rem);
+  line-height: 0.95;
+  margin: 0 0 0.9rem;
+  text-transform: uppercase;
+  color: var(--bone);
+  letter-spacing: -0.01em;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.6),
+    0 14px 40px rgba(0, 0, 0, 0.9);
+}
+
+.hero-copy h1 .stroke {
+  display: block;
+  color: #f2e7cf;
+}
+
+.hero-copy {
+  position: relative;
+}
+
+.hero-copy::before {
+  content: '';
+  position: absolute;
+  /* ceñido al texto: antes se derramaba un 22% a la derecha y oscurecía la
+     cara. El contraste lo da el `text-shadow`, no una mancha oscura. */
+  inset: -8% -4% -10% -14%;
+  z-index: -1;
+  background: radial-gradient(ellipse at 38% 50%, rgba(6, 5, 4, 0.62) 0%, rgba(6, 5, 4, 0.3) 58%, transparent 80%);
+  pointer-events: none;
+}
+
+.hero-sub {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  font-size: clamp(0.7rem, 1.15vw, 1rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--parchment);
+  margin: 0 0 2.2rem;
+}
+
+.socials {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 1.8rem;
+}
+
+.socials a {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(201, 161, 92, 0.35);
+  color: var(--parchment);
+  background: rgba(10, 8, 6, 0.6);
+  transition: color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.socials a:hover {
+  color: var(--ember);
+  border-color: var(--ember);
+  transform: translateY(-3px);
+}
+
+.socials svg {
+  width: 18px;
+  height: 18px;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+/* props flotantes */
+
+.prop {
+  position: absolute;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+  filter: contrast(1.1) brightness(0.95);
+  transform: translate3d(var(--px, 0), var(--py, 0), 0);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 0;
+}
+
+.prop-box {
+  mix-blend-mode: normal;
+  filter: none;
+  transform: translate3d(var(--px, 0), var(--py, 0), 0) rotate(var(--rot, 0deg));
+}
+
+.revolver {
+  /* como en el boceto: grandes, en las esquinas altas y mordidos por el borde */
+  width: clamp(210px, 26vw, 460px);
+  top: 6vh;
+  opacity: 0.95;
+}
+
+/* Par de revólveres recortados de la lámina propia (tools/cut_revolvers.py):
+   traen canal alfa real, así que van con mezcla normal y su propia sombra.
+   La lámina ya viene inclinada, no hace falta rotarlos ni espejarlos. */
+.revolver-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: contrast(1.08) brightness(1.06) drop-shadow(0 18px 28px rgba(0, 0, 0, 0.9));
+}
+
+.revolver-l {
+  left: -7vw;
+}
+
+.revolver-r {
+  right: -7vw;
+}
+
+/* la boca del cañón queda arriba a la derecha en el izquierdo y al revés */
+.revolver-l .smoke {
+  left: 82%;
+}
+
+.revolver-r .smoke {
+  left: 10%;
+}
+
+/* humo saliendo de la boca del cañón */
+/* La boca del cañón está en el borde izquierdo del grabado, tanto en el
+   revólver espejado como en el normal: una sola regla sirve para los dos. */
+.smoke {
+  position: absolute;
+  top: 3%;
+  /* el espejado del revólver izquierdo mueve su marco local: la boca del cañón
+     cae en otro punto, así que cada lado lleva su propio offset */
+  width: 54px;
+  height: 54px;
+  pointer-events: none;
+}
+
+.smoke .puff {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* sprite de humo con silueta irregular (tools/make_smoke.py): un degradado
+     radial siempre se lee como una bola */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  mix-blend-mode: screen;
+  opacity: 0;
+  /* sin `filter: blur()`: el desenfoque por CSS obligaba a rehacer un pase de
+     filtro sobre cada voluta en cada frame. La suavidad ya viene en el sprite. */
+  will-change: transform, opacity;
+  animation: smoke-rise 7s linear infinite;
+}
+
+@keyframes smoke-rise {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(var(--spin0, 0deg)) scale(0.32);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  28% {
+    transform: translate3d(calc(var(--drift, 10px) * 0.5), -48px, 0)
+      rotate(calc(var(--spin0, 0deg) + var(--spin, 40deg) * 0.28)) scale(0.95);
+  }
+  52% {
+    transform: translate3d(calc(var(--drift, 10px) * -0.8), -104px, 0)
+      rotate(calc(var(--spin0, 0deg) + var(--spin, 40deg) * 0.52)) scale(1.6);
+    opacity: 0.5;
+  }
+  76% {
+    transform: translate3d(calc(var(--drift, 10px) * 1.1), -158px, 0)
+      rotate(calc(var(--spin0, 0deg) + var(--spin, 40deg) * 0.76)) scale(2.2);
+    opacity: 0.26;
+  }
+  100% {
+    transform: translate3d(calc(var(--drift, 10px) * 0.3), -214px, 0)
+      rotate(calc(var(--spin0, 0deg) + var(--spin, 40deg))) scale(var(--scale, 2.8));
+    opacity: 0;
+  }
+}
+
+.lantern,
+.hat,
+.footer .skull {
+  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 50% 50%, #000 35%, rgba(0, 0, 0, 0.45) 68%, transparent 88%);
+  mask-image: radial-gradient(ellipse 62% 62% at 50% 50%, #000 35%, rgba(0, 0, 0, 0.45) 68%, transparent 88%);
+}
+
+.lantern {
+  width: clamp(90px, 10vw, 150px);
+  right: 3vw;
+  bottom: 6vh;
+  animation: lantern-glow 4s ease-in-out infinite;
+}
+
+@keyframes lantern-glow {
+  0%, 100% { filter: brightness(0.95); }
+  50% { filter: brightness(1.25); }
+}
+
+.hat {
+  width: clamp(150px, 18vw, 280px);
+  left: 2vw;
+  bottom: 3vh;
+  opacity: 0.55;
+}
+
+/* papel / cita */
+
+.paper {
+  position: relative;
+  margin: 0;
+  padding: 2rem 1.8rem 2.4rem;
+  color: #2a2118;
+  background-image: url('/assets/texture-paper.webp');
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
+  filter: sepia(0.25) contrast(1.05);
+  clip-path: polygon(
+    2% 1%, 40% 0%, 72% 2%, 99% 0%, 98% 33%, 100% 66%, 99% 99%,
+    62% 100%, 30% 98%, 1% 100%, 2% 60%, 0% 30%
+  );
+}
+
+.paper blockquote {
+  margin: 0;
+  font-family: 'Georgia', serif;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: #241c14;
+}
+
+.paper .quote-mark {
+  font-family: Georgia, serif;
+  font-size: 3rem;
+  line-height: 0.6;
+  color: #4a3a26;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.paper figcaption {
+  margin-top: 1.2rem;
+  text-align: right;
+  font-family: var(--font-sign);
+  font-size: 2.1rem;
+  color: #2f2417;
+}
+
+/* tilt genérico */
+
+.tilt {
+  perspective: 1000px;
+}
+
+.tilt-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+@keyframes bob {
+  0%, 100% { transform: rotate(45deg) translate(-2px, -2px); opacity: 0.4; }
+  50% { transform: rotate(45deg) translate(2px, 2px); opacity: 1; }
+}
+
+/* ---------------------------------------------------------------- secciones */
+
+.section {
+  position: relative;
+  isolation: isolate;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(3rem, 6vw, 5.5rem) var(--pad);
+}
+
+/* Sin velo ni desenfoque detrás del contenido: el vídeo de fondo se ve limpio
+   y el texto se coloca en el espacio libre que deja la escena. La legibilidad
+   la dan la sombra del texto y los paneles translúcidos, no un panel opaco. */
+
+/* El título acompaña al contenido en la mitad derecha, no centrado sobre la
+   escena. Misma sombra que el cuerpo de texto: no hay velo detrás. */
+.about .section-title {
+  margin-left: auto;
+  width: min(100%, 62%);
+}
+
+.about .section-title h2,
+.about-copy {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9), 0 8px 30px rgba(0, 0, 0, 0.75);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-bottom: clamp(2.2rem, 5vw, 3.6rem);
+}
+
+.section-title h2 {
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: clamp(1.3rem, 3.2vw, 2.3rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+  white-space: nowrap;
+  color: var(--bone);
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.9);
+}
+
+.section-title .rule {
+  flex: 1;
+  max-width: 220px;
+  color: rgba(201, 161, 92, 0.55);
+}
+
+/* ------------------------------------------------------------------- about */
+
+/* Todo el contenido a la mitad derecha: la izquierda se deja libre para la
+   escena del vídeo. La primera columna es un hueco, no una columna de texto. */
+/* Fuera del tramo del vídeo: fondo liso hasta que llegue la imagen nueva.
+   `.saloon` y `.stage-foot` ya ocupan todo el ancho; `.about` no, porque es
+   una `.section` con `max-width`, así que su fondo va en un pseudo a sangre
+   completa — si no, el vídeo se colaba por los márgenes laterales. */
+.saloon,
+.stage-foot {
+  background: var(--ink);
+}
+
+.about::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  /* Fondo de «About me». Pendiente: la foto cenital de la mesa (poster SE
+     BUSCA, farol, revólver, cartas) va aquí como `url('/assets/table.jpg')`
+     debajo de este degradado — el centro de esa foto es madera vacía, que es
+     donde se apoya el texto. Mientras tanto, liso. El degradado evita que
+     suba como una pared desde el borde inferior y corte el vídeo. */
+  background: linear-gradient(180deg, rgba(8, 7, 5, 0) 0%, var(--ink) 26%, var(--ink) 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(1.6rem, 4vw, 3.5rem);
+  align-items: start;
+}
+
+.about-grid > * {
+  grid-column: 2;
+}
+
+.about-copy p {
+  color: #d5c6a8;
+  margin: 0 0 1.15rem;
+  max-width: 52ch;
+  /* sin velo detrás, el contraste sobre el vídeo lo da la sombra */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 6px 26px rgba(0, 0, 0, 0.8);
+}
+
+.about-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.4rem;
+  margin: 2rem 0;
+  padding: 1.4rem 0;
+  border-top: 1px solid rgba(201, 161, 92, 0.22);
+  border-bottom: 1px solid rgba(201, 161, 92, 0.22);
+}
+
+.about-facts div {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-facts b {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--ember);
+}
+
+.about-facts span {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.card-tilt {
+  height: 100%;
+}
+
+.poster-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem 1.3rem 1.8rem;
+  cursor: pointer;
+  color: #241c12;
+  background-image: url('/assets/texture-paper.webp');
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.8);
+  filter: sepia(0.28) contrast(1.05);
+  transition: filter 0.35s ease, box-shadow 0.35s ease;
+}
+
+.poster-card:hover {
+  filter: sepia(0.16) contrast(1.1) brightness(1.06);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.9), 0 0 40px rgba(224, 145, 63, 0.12);
+}
+
+.wanted-tag {
+  font-size: 0.64rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: #4a3a26;
+}
+
+.card-number {
+  display: block;
+  font-family: var(--font-western);
+  font-size: 1.1rem;
+  color: #3a2d1c;
+  margin: 0.2rem 0 0.35rem;
+}
+
+.poster-card h3 {
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: clamp(1rem, 2.1vw, 1.35rem);
+  line-height: 1.2;
+  margin: 0 0 1rem;
+  color: #1d160e;
+}
+
+.card-photo {
+  width: 100%;
+  border: 2px solid rgba(40, 30, 18, 0.5);
+  overflow: hidden;
+  transform: translateZ(28px);
+}
+
+.card-photo img {
+  width: 100%;
+  filter: grayscale(0.3) sepia(0.3) contrast(1.08);
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.poster-card:hover .card-photo img {
+  transform: scale(1.07);
+}
+
+.card-cat {
+  margin: 0.9rem 0 0.2rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #4a3a26;
+}
+
+.poster-card .btn-frame {
+  margin-top: auto;
+  color: #f0e6d0;
+  transform: translateZ(20px);
+}
+
+/* modal */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background: rgba(4, 3, 2, 0.85);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+}
+
+.modal {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: clamp(1.6rem, 4vw, 2.8rem);
+  clip-path: none;
+}
+
+.modal h3 {
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  margin: 0.4rem 0 0.3rem;
+  color: #1d160e;
+}
+
+.modal-cat {
+  margin: 0 0 1.2rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #4a3a26;
+}
+
+.modal-summary {
+  margin: 0 0 1.2rem;
+  font-family: Georgia, serif;
+  color: #241c14;
+}
+
+.modal-list {
+  margin: 0 0 1.4rem;
+  padding-left: 1.1rem;
+  font-family: Georgia, serif;
+  color: #2c2318;
+}
+
+.modal-list li {
+  margin-bottom: 0.6rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  font-size: 0.64rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid rgba(40, 30, 18, 0.45);
+  color: #2f2517;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.9rem;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(40, 30, 18, 0.4);
+  background: transparent;
+  color: #2f2517;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.modal-close:hover {
+  background: rgba(40, 30, 18, 0.12);
+}
+
+.skill-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.2rem;
+}
+
+.skill-group {
+  padding: 1.1rem 1.3rem;
+  border: 1px solid rgba(201, 161, 92, 0.18);
+  background: linear-gradient(180deg, rgba(24, 19, 13, 0.72), rgba(10, 8, 6, 0.72));
+  backdrop-filter: blur(3px);
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.skill-group:hover {
+  border-color: rgba(224, 145, 63, 0.5);
+  transform: translateY(-3px);
+}
+
+.skill-group h4 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  color: var(--brass);
+}
+
+.skill-group p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #b9a98d;
+}
+
+/* -------------------------------------------------------------- experiencia */
+
+.timeline {
+  display: grid;
+  gap: 1.6rem;
+  margin-bottom: clamp(3rem, 7vw, 5rem);
+}
+
+.edu-card {
+  padding: 1.3rem 1.4rem;
+  border: 1px solid rgba(201, 161, 92, 0.2);
+  background: rgba(14, 11, 8, 0.65);
+}
+
+.edu-card h4 {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--bone);
+}
+
+.edu-card p {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  color: #b9a98d;
+}
+
+.edu-card span {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+/* ------------------------------------------------------------------ footer */
+
+.footer {
+  text-align: center;
+  padding: 2.5rem var(--pad) 3rem;
+  border-top: 1px solid rgba(201, 161, 92, 0.15);
+  background: rgba(5, 4, 3, 0.8);
+}
+
+.footer p {
+  margin: 0.15rem 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--parchment);
+}
+
+.footer small {
+  display: block;
+  margin-top: 1.2rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------------ responsive */
+
+@media (max-width: 1080px) {
+  .hero-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hero-quote {
+    grid-column: 1 / -1;
+    max-width: 480px;
+  }
+}
+
+@media (max-width: 820px) {
+  .burger {
+    display: flex;
+  }
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    right: var(--pad);
+    left: var(--pad);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 1rem 1.2rem;
+    background: rgba(8, 7, 5, 0.97);
+    border: 1px solid rgba(201, 161, 92, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .nav-links.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .nav-links .sep {
+    display: none;
+  }
+  .hero {
+    padding-top: 6rem;
+  }
+  /* Sin el retrato en medio, el texto vuelve a ir primero y la cita después.
+     `.hero-quote` va dentro de `.hero-side`, así que el orden se aplica al
+     hijo directo del grid, no a ella. */
+  .hero-copy {
+    order: 1;
+  }
+  .hero-side {
+    order: 2;
+  }
+  .socials {
+    justify-content: center;
+  }
+  .revolver {
+    width: 150px;
+    opacity: 0.5;
+    top: 8vh;
+  }
+  .about-grid,
+  .about-grid > *,
+  .about .section-title {
+    grid-column: 1;
+    width: auto;
+    margin-left: 0;
+  }
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+  .section-title .rule {
+    display: none;
+  }
+  .section-title h2 {
+    white-space: normal;
+  }
+  .hat,
+  .lantern {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

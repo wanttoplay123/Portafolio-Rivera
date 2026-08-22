@@ -1,0 +1,19 @@
+# dependencias
+node_modules/
+
+# build
+dist/
+
+# capturas de las herramientas de revisión: se regeneran
+shots/
+
+# sistema / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# entorno
+.env
+.env.local
+*.local

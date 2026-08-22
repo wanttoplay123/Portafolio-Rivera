@@ -1,0 +1,168 @@
+/* =========================================================================
+   Proyectos sobre la mesa del forajido (`assets/table-scene.webp`)
+   La foto trae ya el cartel SE BUSCA y el farol pegados al borde izquierdo y
+   la botella, las cartas y el reloj al derecho: el centro es tabla vacía y ahí
+   se apoyan las tarjetas. Por eso el bloque no va centrado en la sección sino
+   desplazado a la derecha, y en móvil la foto pasa a ser solo textura.
+   ========================================================================= */
+
+.mesa {
+  position: relative;
+  z-index: 3;
+  isolation: isolate;
+  display: grid;
+  align-items: center;
+  min-height: min(100vh, 900px);
+  padding: clamp(3rem, 7vh, 6rem) 0;
+  /* sangra a todo el ancho aunque el <main> tenga su medida */
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  background-image: url('/assets/table-scene.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Fundidos arriba y abajo: la mesa entra desde el negro de la página y sale al
+   negro del saloon, sin el corte recto de la foto. */
+.mesa::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    var(--ink) 0%,
+    rgba(8, 7, 5, 0) 16%,
+    rgba(8, 7, 5, 0) 84%,
+    var(--ink) 100%
+  );
+  pointer-events: none;
+}
+
+/* Las tarjetas van centradas en la tabla libre, no pegadas al canto derecho.
+   En la foto el cartel SE BUSCA, el farol y el revólver ocupan hasta ~el 28 %
+   del ancho y la botella con las cartas empieza sobre el 88 %: el hueco de
+   madera vacía es lo que queda en medio, y ahí se centra el bloque. */
+.mesa-inner {
+  width: min(58%, 860px);
+  margin-left: 30%;
+  margin-right: auto;
+  text-align: center;
+}
+
+.mesa-title {
+  font-size: clamp(1.1rem, 2vw, 1.75rem);
+  color: var(--bone);
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95);
+}
+
+.mesa .panel-sub {
+  margin-bottom: clamp(1.1rem, 2vw, 1.8rem);
+}
+
+.mesa-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.8rem, 1.6vw, 1.6rem);
+  align-items: stretch;
+}
+
+.mesa-cards .card-tilt,
+.mesa-cards .tilt-inner {
+  height: 100%;
+}
+
+/* Las tarjetas están apoyadas en la tabla: cada una cae con su propio ángulo,
+   como papeles sueltos, y se endereza al pasar el puntero. */
+.mesa-cards > *:nth-child(1) {
+  transform: rotate(-2.1deg);
+}
+
+.mesa-cards > *:nth-child(2) {
+  transform: rotate(0.9deg);
+}
+
+.mesa-cards > *:nth-child(3) {
+  transform: rotate(2.4deg);
+}
+
+.mesa-cards > * {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mesa-cards > *:hover {
+  transform: rotate(0deg) translateY(-6px);
+}
+
+.mesa .poster-card {
+  padding: 1rem 0.9rem 1.2rem;
+  /* la mesa ya tiene su propia sombra proyectada; se refuerza el contacto */
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.85), 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.mesa .poster-card h3 {
+  font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+  margin-bottom: 0.7rem;
+  min-height: 2.5em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mesa .card-photo {
+  aspect-ratio: 16 / 10;
+}
+
+.mesa .card-photo img {
+  height: 100%;
+  object-fit: cover;
+}
+
+.mesa .card-cat {
+  line-height: 1.3;
+  margin: 0.5rem 0 0.7rem;
+}
+
+/* ----------------------------------------------------------- responsive */
+
+@media (max-width: 1180px) {
+  /* menos ancho total: el bodegón se aprieta y el hueco central se estrecha */
+  .mesa-inner {
+    width: min(62%, 700px);
+    margin-left: 32%;
+  }
+}
+
+@media (max-width: 900px) {
+  /* De pie no cabe el bodegón: la foto se queda de textura, oscurecida, y las
+     tarjetas ocupan el ancho. */
+  .mesa {
+    min-height: 0;
+    background-position: 65% center;
+  }
+  .mesa::before {
+    background:
+      linear-gradient(180deg, var(--ink) 0%, rgba(8, 7, 5, 0) 22%, rgba(8, 7, 5, 0) 78%, var(--ink) 100%),
+      rgba(8, 7, 5, 0.55);
+  }
+  .mesa-inner {
+    width: auto;
+    margin-inline: clamp(1rem, 4vw, 2.6rem);
+  }
+  .mesa-cards {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin-inline: auto;
+  }
+  .mesa-cards > *:nth-child(n) {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesa-cards > * {
+    transition: none;
+  }
+}

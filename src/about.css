@@ -1,0 +1,247 @@
+/* =========================================================================
+   About me
+   Va después de styles.css: la sección nació apoyada en la mitad derecha
+   —el vídeo enseñaba la escena a la izquierda— y ahora el vídeo se corta
+   antes de llegar aquí, así que ocupa el ancho entero: ficha a la izquierda,
+   texto a la derecha, y las herramientas del oficio en una rejilla debajo.
+   ========================================================================= */
+
+.about .section-title {
+  width: 100%;
+  margin-left: 0;
+}
+
+.about-grid {
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+  align-items: start;
+  gap: clamp(1.8rem, 4vw, 3.5rem);
+}
+
+/* La regla vieja metía TODO en la segunda columna —la primera era el hueco que
+   dejaba libre la escena del vídeo—. Ahora hay dos columnas de verdad. */
+.about-grid > * {
+  grid-column: auto;
+}
+
+.about-card {
+  max-width: 380px;
+}
+
+/* ------------------------------------------------------------------ ficha */
+
+.about-card-inner {
+  padding: clamp(1.1rem, 2vw, 1.6rem);
+  border: 1px solid rgba(201, 161, 92, 0.28);
+  background: linear-gradient(180deg, rgba(22, 17, 12, 0.92), rgba(9, 7, 5, 0.95));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+/* El recorte del mockup trae fondo negro: se quema con `screen` y se recorta
+   con una máscara radial, igual que el resto de recortes del proyecto. */
+.about-photo {
+  margin-bottom: 1rem;
+  aspect-ratio: 4 / 4.4;
+  overflow: hidden;
+  border: 1px solid rgba(201, 161, 92, 0.35);
+  background: radial-gradient(ellipse at 50% 35%, rgba(60, 45, 28, 0.5), rgba(6, 5, 4, 0.9) 70%);
+}
+
+.about-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  mix-blend-mode: screen;
+  filter: sepia(0.3) contrast(1.06);
+  -webkit-mask-image: radial-gradient(ellipse 78% 82% at 50% 44%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 78% 82% at 50% 44%, #000 55%, transparent 100%);
+}
+
+.about-card-inner h3 {
+  margin: 0;
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  line-height: 1.3;
+  color: var(--bone);
+}
+
+.about-role {
+  margin: 0.25rem 0 1rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+/* Datos duros: etiqueta arriba, valor debajo, con una línea de puntos que los
+   separa. Rejilla de una columna para que las etiquetas queden alineadas. */
+.about-facts {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0 0 1.1rem;
+  text-align: left;
+}
+
+.about-facts div {
+  padding-bottom: 0.55rem;
+  border-bottom: 1px dotted rgba(201, 161, 92, 0.28);
+}
+
+.about-facts div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.about-facts dt {
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.about-facts dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--parchment);
+}
+
+.about-links {
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+}
+
+.about-links a {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(201, 161, 92, 0.35);
+  color: var(--parchment);
+  transition: color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.about-links a:hover {
+  color: var(--ember);
+  border-color: var(--ember);
+  transform: translateY(-2px);
+}
+
+/* ------------------------------------------------------------------ texto */
+
+.about-copy p {
+  margin: 0 0 1.1rem;
+  max-width: 62ch;
+  font-size: clamp(0.95rem, 0.92rem + 0.15vw, 1.05rem);
+  line-height: 1.85;
+  color: #cbbc9f;
+}
+
+/* la primera línea entra en versalitas: da entrada al bloque sin un titular más */
+.about-copy p:first-of-type {
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.2rem);
+  color: var(--bone);
+}
+
+.about-quote {
+  position: relative;
+  margin-top: clamp(1.2rem, 2.5vw, 2rem);
+  padding: clamp(1rem, 2vw, 1.4rem) clamp(1.1rem, 2vw, 1.6rem);
+  border-left: 2px solid var(--brass);
+  background: linear-gradient(90deg, rgba(201, 161, 92, 0.09), transparent 70%);
+}
+
+.about-quote blockquote {
+  margin: 0;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: clamp(0.92rem, 1.1vw, 1.05rem);
+  line-height: 1.7;
+  color: var(--parchment);
+}
+
+.about-quote .quote-mark {
+  position: absolute;
+  top: -0.2rem;
+  left: 0.6rem;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1;
+  color: rgba(201, 161, 92, 0.35);
+}
+
+/* ------------------------------------------------- herramientas del oficio */
+
+.skill-groups-head {
+  margin: clamp(2.4rem, 5vw, 4rem) 0 clamp(1.2rem, 2.4vw, 1.8rem);
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: clamp(1rem, 1.6vw, 1.35rem);
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: var(--bone);
+}
+
+.skill-groups {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.7rem, 1.4vw, 1.1rem);
+}
+
+.skill-group {
+  padding: clamp(0.9rem, 1.6vw, 1.2rem);
+  border: 1px solid rgba(201, 161, 92, 0.2);
+  background: linear-gradient(180deg, rgba(20, 16, 11, 0.85), rgba(8, 7, 5, 0.9));
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.skill-group:hover {
+  border-color: rgba(224, 145, 63, 0.55);
+  transform: translateY(-3px);
+}
+
+.skill-group h4 {
+  margin: 0 0 0.45rem;
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: 0.86rem;
+  letter-spacing: 0.04em;
+  color: var(--brass);
+}
+
+.skill-group p {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.6;
+  color: #b6a68a;
+}
+
+/* ----------------------------------------------------------- responsive */
+
+@media (max-width: 1180px) {
+  .skill-groups {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+  .about-card {
+    max-width: 340px;
+    margin-inline: auto;
+  }
+  .skill-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .skill-groups {
+    grid-template-columns: 1fr;
+  }
+}

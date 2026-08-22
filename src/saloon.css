@@ -1,0 +1,211 @@
+/* =========================================================================
+   Experiencia — línea de tiempo
+   La sección nació apoyada en la mitad derecha porque el vídeo enseñaba la
+   escena a la izquierda. El vídeo ahora corta antes de llegar aquí, así que
+   la mitad vacía sobraba: la línea va centrada y ocupa el ancho útil.
+   ========================================================================= */
+
+.saloon {
+  position: relative;
+  z-index: 3;
+  padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(3rem, 6vw, 5rem);
+  background: var(--ink);
+}
+
+/* un rescoldo de farol arriba, para que el negro no arranque plano */
+.saloon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 45% at 50% 0%, rgba(201, 161, 92, 0.07), transparent 70%);
+  pointer-events: none;
+}
+
+.saloon-inner {
+  position: relative;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+}
+
+/* --------------------------------------------------------- línea de tiempo */
+
+/* El raíl es un borde en la lista, no un pseudo-elemento con altura fija: así
+   crece solo con los puestos que haya. Los puntos se cuelgan de cada item. */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 clamp(1.4rem, 3vw, 2.6rem);
+  border-left: 1px solid rgba(201, 161, 92, 0.28);
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: clamp(1.2rem, 2.6vw, 2rem);
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+/* punto del raíl: la estrella pequeña del resto de la página, en latón */
+.timeline-dot {
+  position: absolute;
+  top: clamp(1.1rem, 1.8vw, 1.5rem);
+  left: calc(clamp(1.4rem, 3vw, 2.6rem) * -1);
+  width: 13px;
+  height: 13px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--brass);
+  box-shadow: 0 0 0 4px var(--ink), 0 0 16px rgba(224, 145, 63, 0.55);
+}
+
+.timeline-card {
+  padding: clamp(1rem, 2vw, 1.5rem) clamp(1.1rem, 2.2vw, 1.7rem);
+  border: 1px solid rgba(201, 161, 92, 0.22);
+  background: linear-gradient(180deg, rgba(21, 16, 11, 0.9), rgba(8, 7, 5, 0.94));
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.timeline-card:hover {
+  border-color: rgba(224, 145, 63, 0.5);
+  transform: translateX(3px);
+}
+
+.timeline-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.timeline-head h3 {
+  margin: 0;
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: clamp(0.98rem, 1.5vw, 1.25rem);
+  color: var(--bone);
+}
+
+.timeline-period {
+  flex: none;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid rgba(224, 145, 63, 0.35);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.timeline-org {
+  margin: 0.3rem 0 0.9rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+/* Viñetas con estrella en vez del punto del navegador: la lista es larga y el
+   marcador propio la ata al resto de la página. */
+.timeline-card ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.timeline-card li {
+  position: relative;
+  padding-left: 1.3rem;
+  font-size: 0.86rem;
+  line-height: 1.65;
+  color: #c2b396;
+}
+
+.timeline-card li::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  font-size: 0.7rem;
+  color: rgba(201, 161, 92, 0.7);
+}
+
+/* ------------------------------------------------------------- formación */
+
+.saloon-foot {
+  margin-top: clamp(2.2rem, 4.5vw, 3.6rem);
+}
+
+.saloon-sub {
+  margin: 0 0 clamp(0.8rem, 1.6vw, 1.1rem);
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: clamp(0.9rem, 1.4vw, 1.15rem);
+  letter-spacing: 0.05em;
+  text-align: center;
+  color: var(--bone);
+}
+
+.saloon-edu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.7rem, 1.4vw, 1.1rem);
+}
+
+.edu-card {
+  padding: clamp(0.9rem, 1.6vw, 1.2rem);
+  border: 1px solid rgba(201, 161, 92, 0.2);
+  background: rgba(12, 9, 7, 0.8);
+  transition: border-color 0.3s ease;
+}
+
+.edu-card:hover {
+  border-color: rgba(224, 145, 63, 0.45);
+}
+
+.edu-card h4 {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-western);
+  font-weight: 400;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  color: var(--bone);
+}
+
+.edu-card p {
+  margin: 0 0 0.5rem;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: #b6a68a;
+}
+
+.edu-card span {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+/* ------------------------------------------------------------- responsive */
+
+@media (max-width: 900px) {
+  .timeline {
+    padding-left: 1.2rem;
+  }
+  .timeline-dot {
+    left: -1.2rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .saloon-edu {
+    grid-template-columns: 1fr;
+  }
+  .timeline-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,51 @@
+/* =========================================================================
+   Conmutador de idioma (ES / EN)
+   Vive dentro de `.nav-links`, al final de la fila: el orden de lectura lo
+   deja después de las secciones, que es donde se espera encontrarlo.
+   ========================================================================= */
+
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  margin-left: clamp(0.6rem, 1.4vw, 1.4rem);
+  border: 1px solid rgba(201, 161, 92, 0.4);
+}
+
+.lang-switch button {
+  padding: 0.28rem 0.62rem;
+  border: 0;
+  background: none;
+  font-family: var(--font-western);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.25s ease, background-color 0.25s ease;
+}
+
+/* la separación entre los dos, del mismo latón que el marco */
+.lang-switch button + button {
+  border-left: 1px solid rgba(201, 161, 92, 0.4);
+}
+
+.lang-switch button:hover {
+  color: var(--parchment);
+}
+
+.lang-switch button.is-active {
+  color: var(--ink);
+  background: var(--brass);
+}
+
+.lang-switch button:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
+/* De pie el menú se despliega en columna: el conmutador se centra debajo de
+   los enlaces en vez de quedarse pegado al último. */
+@media (max-width: 900px) {
+  .lang-switch {
+    margin: 0.8rem auto 0;
+  }
+}

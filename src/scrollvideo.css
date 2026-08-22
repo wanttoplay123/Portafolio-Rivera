@@ -1,0 +1,47 @@
+/* ------------------------------------------------- fondo de vídeo scrubbed */
+
+/* Capa base. Comparte z-index con .scene3d y va antes en el DOM, así el
+   canvas de polvo pinta encima; después vienen viñeta (1), grano (2) y el
+   contenido (3). No se usa z-index negativo: quedaría por detrás del fondo
+   propagado de <body>. */
+.scroll-video {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--ink, #0a0705);
+}
+
+.scroll-video video {
+  width: 100%;
+  height: 100%;
+  /* `contain`: el plano se ve entero y sin reescalar de más. Con `cover` el
+     16:9 se recortaba contra pantallas más altas o más anchas y el mismo
+     archivo tenía que estirarse para tapar el hueco, que es lo que restaba
+     nitidez. Las bandas quedan del negro de la página, no grises. */
+  object-fit: contain;
+  display: block;
+  /* Sin `filter`: el ajuste de brillo/contraste/saturación va horneado en el
+     propio MP4 (ver README). Aplicarlo por CSS obligaba a un pase de filtro
+     sobre una capa a pantalla completa en cada frame. */
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+.scroll-video.is-ready video {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-video video {
+    transition: none;
+  }
+}
+
+/* En vertical estrecho el 16:9 entra como una franja centrada; se sube para
+   que la cara quede arriba y el contenido apilado caiga sobre lo oscuro. */
+@media (max-width: 700px) {
+  .scroll-video video {
+    object-position: 50% 30%;
+  }
+}
