@@ -156,6 +156,15 @@
     max-width: 420px;
     margin-inline: auto;
   }
+  /* la nav es fija: sin este aire el título entra por debajo de ella */
+  .mesa {
+    padding-top: clamp(5rem, 14vh, 7rem);
+  }
+  /* la foto del cartel se comía la pantalla entera por tarjeta */
+  .mesa .card-photo {
+    aspect-ratio: 16 / 9;
+    max-height: 190px;
+  }
   .mesa-cards > *:nth-child(n) {
     transform: none;
   }

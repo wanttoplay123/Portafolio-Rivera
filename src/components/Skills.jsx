@@ -606,8 +606,28 @@ function useChoreo() {
   return ref
 }
 
-export default function SkillsPanel({ items, title, sub, hint, hiddenLabel }) {
+/**
+ * `true` en pantallas sin puntero fino: el móvil no dispara, toca. Se resuelve
+ * con `matchMedia` y no con el ancho, porque hay tablets anchas sin ratón y
+ * portátiles estrechos con él.
+ */
+function useCoarsePointer() {
+  const [coarse, setCoarse] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: none)')
+    const apply = () => setCoarse(mq.matches)
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
+
+  return coarse
+}
+
+export default function SkillsPanel({ items, title, sub, hint, hintTouch, hiddenLabel }) {
   const panelRef = useChoreo()
+  const coarse = useCoarsePointer()
   const fire = useShot()
   const rows = pyramid(items)
   // la pista se retira en cuanto se dispara la primera placa: ya no hace falta
@@ -636,7 +656,7 @@ export default function SkillsPanel({ items, title, sub, hint, hiddenLabel }) {
 
       <p className={`skills-hint ${shot ? 'is-done' : ''}`} aria-hidden={shot}>
         <span className="hint-cross" />
-        {hint}
+        {coarse ? hintTouch || hint : hint}
       </p>
     </section>
   )

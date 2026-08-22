@@ -4,6 +4,13 @@ const BASE = import.meta.env.BASE_URL
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v)
 
+/** Volutas del humo del cigarrillo y duración de una vuelta completa. */
+const SMOKE_PUFFS = 6
+const SMOKE_CYCLE = 15
+
+/** Segundo a partir del cual manda el plano del saloon: ahí hay cigarrillo. */
+const SMOKE_FROM = 8.2
+
 /**
  * Anclas por defecto [selector, segundo del vídeo]. A nivel de módulo, no como
  * valor por defecto en línea: un array literal en la firma cambia de identidad
@@ -142,7 +149,29 @@ export default function ScrollVideo({
     // Escribir en `style` invalida el estilo del nodo aunque el valor no cambie,
     // y esto corre en cada frame: se memoriza lo último pintado para no tocar
     // el DOM si no hace falta.
-    let painted = { opacity: -1, hidden: null }
+    let painted = { opacity: -1, hidden: null, smoking: null }
+
+    /**
+     * Caja real del fotograma dentro del wrap. Con `object-fit: contain` el
+     * vídeo deja bandas, así que el humo no puede ir en porcentajes del wrap:
+     * se calcula el rectángulo del contenido y se publica en variables CSS.
+     */
+    const measureFrame = () => {
+      const w = wrap.clientWidth
+      const h = wrap.clientHeight
+      const ar = video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : 16 / 9
+      const fit = getComputedStyle(video).objectFit
+      let fw = w
+      let fh = w / ar
+      if (fit === 'cover' ? fh < h : fh > h) {
+        fh = h
+        fw = h * ar
+      }
+      wrap.style.setProperty('--vx', `${(w - fw) / 2}px`)
+      wrap.style.setProperty('--vy', `${(h - fh) / 2}px`)
+      wrap.style.setProperty('--vw', `${fw}px`)
+      wrap.style.setProperty('--vh', `${fh}px`)
+    }
 
     const paint = (raw) => {
       // Se redondea: por debajo de 1/255 el cambio no es visible.
@@ -160,10 +189,19 @@ export default function ScrollVideo({
       }
     }
 
+    /** El humo solo tiene sentido sobre el plano del saloon. */
+    const smoke = () => {
+      const on = current >= SMOKE_FROM && painted.opacity > 0.5
+      if (on === painted.smoking) return
+      painted.smoking = on
+      wrap.classList.toggle('is-smoking', on)
+    }
+
     const tick = () => {
       raf = requestAnimationFrame(tick)
       const p = read()
       paint(p)
+      smoke()
 
       if (!duration) return
 
@@ -196,12 +234,14 @@ export default function ScrollVideo({
 
     const onResize = () => {
       measure()
+      measureFrame()
       wake()
     }
 
     const onMeta = () => {
       duration = video.duration || 0
       measure()
+      measureFrame()
       // Salto seco a la posición de scroll actual (recarga a media página).
       current = timeAt()
       video.currentTime = current
@@ -216,7 +256,9 @@ export default function ScrollVideo({
     if (video.readyState >= 2) onReady()
 
     measure()
+    measureFrame()
     paint(read())
+    smoke()
 
     if (!reduced) {
       window.addEventListener('scroll', wake, { passive: true })
@@ -261,6 +303,27 @@ export default function ScrollVideo({
         disablePictureInPicture
         tabIndex={-1}
       />
+
+      {/* Humo del cigarrillo sobre el plano final. El vídeo se queda quieto en
+          ese fotograma mientras se leen las skills, y una escena congelada se
+          nota muerta: estas volutas la mantienen viva. Solo se pintan en ese
+          tramo (`is-smoking`). */}
+      <div className="video-smoke">
+        {Array.from({ length: SMOKE_PUFFS }, (_, i) => (
+          <span
+            key={i}
+            className="puff"
+            style={{
+              backgroundImage: `url(${BASE}assets/smoke-${(i % 4) + 1}.webp)`,
+              animationDelay: `${(i * SMOKE_CYCLE) / SMOKE_PUFFS}s`,
+              '--drift': `${(i % 2 ? 1 : -1) * (14 + (i % 3) * 10)}px`,
+              '--spin0': `${i * 47}deg`,
+              '--spin': `${(i % 2 ? 1 : -1) * (30 + (i % 3) * 22)}deg`,
+              '--scale': 1.5 + (i % 3) * 0.45,
+            }}
+          />
+        ))}
+      </div>
     </div>
   )
 }

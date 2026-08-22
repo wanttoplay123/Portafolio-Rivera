@@ -122,6 +122,9 @@
   background: none;
   cursor: crosshair;
   perspective: 700px;
+  /* táctil: sin retardo de 300 ms y sin el destello azul del navegador */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: filter 0.3s ease;
 }
 
@@ -399,5 +402,42 @@
   .skills-hint {
     animation: none;
     opacity: 1;
+  }
+}
+
+
+/* ------------------------------------------------------------------ táctil */
+
+/* Sin ratón no hay hover, así que la mira —que es la pista de que la placa se
+   puede tocar— tiene que estar puesta desde el principio, más tenue. */
+@media (hover: none) {
+  .badge::after {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  .badge:hover .badge-face {
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.8));
+  }
+  .badge-cell:active .badge::after {
+    opacity: 1;
+  }
+}
+
+/* En móvil las ocho placas de la fila tienen que caber en 358 px de ancho
+   útil: la celda se estrecha y el hueco entre filas se cierra. */
+@media (max-width: 620px) {
+  .badge-pyramid {
+    min-height: clamp(200px, 30vh, 280px);
+    gap: 0.6rem;
+  }
+  .skills-panel {
+    padding-inline: 0.4rem;
+    padding-top: 0;
+  }
+  .panel-sub {
+    margin-bottom: 0.7rem;
+  }
+  .skills-hint {
+    margin-top: 0.9rem;
   }
 }

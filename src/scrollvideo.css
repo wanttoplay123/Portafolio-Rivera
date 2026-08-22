@@ -38,10 +38,107 @@
   }
 }
 
-/* En vertical estrecho el 16:9 entra como una franja centrada; se sube para
-   que la cara quede arriba y el contenido apilado caiga sobre lo oscuro. */
-@media (max-width: 700px) {
+/* En vertical el 16:9 entra como una franja centrada y deja media pantalla en
+   negro, con el contenido flotando fuera del plano. Ahí sí compensa recortar:
+   `cover` con el encuadre subido para que la cara quede arriba y las placas
+   caigan sobre la zona oscura. */
+/* El sujeto no está centrado en el cuadro: en la portada mira de frente y en
+   el plano del saloon se sienta a la izquierda. Con `cover` en vertical se
+   recorta por los lados, así que el encuadre se corre a la izquierda para que
+   su cara siga dentro en los dos planos. */
+@media (max-width: 900px) {
   .scroll-video video {
-    object-position: 50% 30%;
+    object-fit: cover;
+    object-position: 45% 0%;
+  }
+}
+
+/* ---------------------------------------------- humo del cigarrillo (plano final) */
+
+/* El vídeo se queda quieto en su último fotograma mientras se leen las placas
+   de skills, y una escena congelada se nota muerta. Estas volutas salen de la
+   mano del sujeto y la mantienen viva.
+
+   La capa se ancla al rectángulo real del fotograma (`--vx/--vy/--vw/--vh`, los
+   escribe `ScrollVideo`): con `object-fit: contain` el vídeo deja bandas, así
+   que un porcentaje del wrap caería fuera del plano. */
+.video-smoke {
+  position: absolute;
+  /* el cigarro está en el cenicero de la mesa, abajo a la izquierda del
+     fotograma: 13 % del ancho, 89 % del alto. Medido sobre el plano final. */
+  left: calc(var(--vx, 0px) + var(--vw, 100%) * 0.13);
+  top: calc(var(--vy, 0px) + var(--vh, 100%) * 0.89);
+  width: clamp(46px, 4.6vw, 86px);
+  height: clamp(46px, 4.6vw, 86px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 1.2s ease;
+}
+
+/* solo sobre el plano del saloon, que es donde hay cigarrillo */
+.scroll-video.is-smoking .video-smoke {
+  opacity: 1;
+  visibility: visible;
+}
+
+.video-smoke .puff {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  /* `screen` sobre un plano oscuro: el humo aclara sin ensuciar el negro */
+  mix-blend-mode: screen;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: cigarette-rise 15s linear infinite;
+}
+
+/* Sube despacio, deriva y gira mientras se abre, y al final se deshace: crece
+   y se desenfoca a la vez, que es como se disipa el humo de verdad. El
+   desenfoque solo entra en el último tercio y sobre seis volutas pequeñas, así
+   que el pase de filtro sale barato. */
+@keyframes cigarette-rise {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(var(--spin0, 0deg)) scale(0.28);
+    opacity: 0;
+    filter: blur(0px);
+  }
+  10% {
+    opacity: 0.5;
+  }
+  40% {
+    transform: translate3d(calc(var(--drift, 12px) * 0.5), -90px, 0)
+      rotate(calc(var(--spin0, 0deg) + var(--spin, 30deg) * 0.4))
+      scale(calc(var(--scale, 1.6) * 0.55));
+    opacity: 0.45;
+    filter: blur(0px);
+  }
+  72% {
+    transform: translate3d(calc(var(--drift, 12px) * 0.85), -170px, 0)
+      rotate(calc(var(--spin0, 0deg) + var(--spin, 30deg) * 0.75))
+      scale(calc(var(--scale, 1.6) * 0.95));
+    opacity: 0.26;
+    filter: blur(3px);
+  }
+  100% {
+    transform: translate3d(var(--drift, 12px), -250px, 0)
+      rotate(calc(var(--spin0, 0deg) + var(--spin, 30deg)))
+      scale(calc(var(--scale, 1.6) * 1.5));
+    opacity: 0;
+    filter: blur(8px);
+  }
+}
+
+@media (max-width: 900px) {
+  .video-smoke {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-smoke {
+    display: none;
   }
 }

@@ -580,9 +580,75 @@
 
 @media (max-width: 900px) {
   .skills-stage {
-    height: 220vh;
+    height: 200vh;
   }
+  /* La cara del plano vive en la mitad superior: las placas se pegan por
+     debajo para no taparla. */
   .skills-stage .stage-band {
-    top: 5.5rem;
+    top: 44vh;
+  }
+}
+
+/* ------------------------------------------------------- portada en móvil */
+
+/* Los revólveres son marco, no contenido: en pantallas estrechas se cruzaban
+   por encima del titular. Se bajan, se apagan y pasan por detrás del texto. */
+@media (max-width: 760px) {
+  /* La tarjeta de la cita ocupaba media pantalla justo sobre la cara del
+     plano. En vertical no hay sitio para las dos cosas y manda la escena: la
+     cita ya se lee entera en «Sobre mí». */
+  .hero-quote,
+  .hero-side .palace {
+    display: none;
+  }
+  .stage .revolver {
+    top: auto;
+    bottom: 8%;
+    z-index: 1;
+    opacity: calc(var(--hero-in, 1) * 0.4);
+  }
+  .stage-hero {
+    position: relative;
+    z-index: 3;
+  }
+  .stage .smoke {
+    display: none;
+  }
+  /* En vertical la cabeza ocupa el tercio y medio de arriba, así que el
+     encuadre la ancla al borde superior y todo el texto vive por debajo de la
+     barbilla. El kicker sobra: es la línea más prescindible y libera una
+     franja entera. */
+  .stage-hero {
+    align-items: end;
+    min-height: 76vh;
+    padding-bottom: 0.5rem;
+  }
+  .hero-copy {
+    align-self: end;
+  }
+  .hero-copy .kicker {
+    display: none;
+  }
+  .hero-copy h1 {
+    /* 11vw se salía por la derecha con «EXPERIENCIAS» */
+    font-size: clamp(1.45rem, 7.2vw, 2.4rem);
+    line-height: 1;
+  }
+  /* los enlaces sociales se repiten en «Sobre mí» y en el pie: aquí solo
+     estorbaban al bloque, que necesita caber bajo la barbilla */
+  .hero-copy .socials {
+    display: none;
+  }
+  /* el interletrado ancho la sacaba por el borde derecho */
+  .hero-sub {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+  }
+}
+
+/* Cuatro cifras en una fila de 390 px salen a tres líneas cada una. */
+@media (max-width: 620px) {
+  .hero-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

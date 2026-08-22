@@ -699,6 +699,7 @@ function SkillsBand() {
         title={c.ui.skillsTitle}
         sub={c.ui.skillsSub}
         hint={c.ui.skillsHint}
+        hintTouch={c.ui.skillsHintTouch}
         hiddenLabel={c.ui.badgeHidden}
       />
     </div>
